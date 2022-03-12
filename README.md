@@ -9,11 +9,11 @@ bsmap -a $input_fastq -d $ref_genome_fasta -o $output_bam -D C-CGG -D T-CGA -w 1
 
 #### This is used to map cDNA sequences from Dong et al., 2009 to the zebrafinch transcriptome GCF_003957565.2_bTaeGut1.4.pri_rna.fna
 
-minimap2 -I 13G $/GCF_003957565.2_bTaeGut1.4.pri_rna.fna $/sb_array_seq.FASTA
+minimap2 -I 13G ~/GCF_003957565.2_bTaeGut1.4.pri_rna.fna ~/sb_array_seq.FASTA
 
 #### This is used to map cDNA sequences from Dong et al., 2009 to the zebrafinch genome GCF_003957565.2_bTaeGut1.4.pri_genomic.fna
 
-minimap2 -I 13G -a --splice --sr --junc-bed $/GCF_003957565.2_bTaeGut1.4.pri_genomic.bed $/GCF_003957565.2_bTaeGut1.4.pri_genomic.fna $/sb_array_seq.FASTA 
+minimap2 -I 13G -a --splice --sr --junc-bed ~/GCF_003957565.2_bTaeGut1.4.pri_genomic.bed ~/GCF_003957565.2_bTaeGut1.4.pri_genomic.fna ~/sb_array_seq.FASTA 
 
 ## Rtracklayer to capture genomic internals, promoter regions and transcription start sites.
 
@@ -50,3 +50,7 @@ colnames(gene_list) <- "gene" #This step changes the column name/header to "gene
 RRBS_genes <- dplyr::semi_join(RDS_file, gene_list, by="gene") #This step matches filters the RDS for only the unique or significant genes in gene_list
 saveRDS(RRBS_genes, file="Condition_RRBS_genes.RDS") #saves the RDS file
 ```
+
+### Extracting alignments from BSMAP output files using samtools view
+
+samtools view -b -L Condition_RRBS_genes.bed ~/$_output.bam
