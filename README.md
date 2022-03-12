@@ -56,4 +56,4 @@ saveRDS(RRBS_genes, file="Condition_RRBS_genes.RDS") #saves the RDS file
 samtools view -b -L Condition_RRBS_genes.bed ~/$_output.bam
 
 ### Extracting Methylated CpG sites using BSMAPz
-python ~/methratio.py -o ${f}_methratio.txt -d ~/GCF_003957565.2_bTaeGut1.4.pri_genomic.fna -z -x CG ~/${f}_AASA_interval.bam
+python ~/methratio.py -o $_methratio.txt -d ~/GCF_003957565.2_bTaeGut1.4.pri_genomic.fna -z -x CG ~/$_interval.bam
