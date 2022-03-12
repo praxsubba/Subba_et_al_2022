@@ -45,7 +45,7 @@ as.data.frame(dat)%>%mutate(interval_start=ifelse(strand=="+",start-2000,start))
   mutate(interval_stop=ifelse(strand=="-",end+2000,end))%>%
   saveRDS("PS_bTaeGut_v2p_gene_intervals_plus_10K_v2.RDS")
 RDS_file <- readRDS("PS_bTaeGut_v2p_gene_intervals_plus_10K_v2.RDS") #This reads the RDS file into a data frame test
-gene_list <- read.table(file = "unique_genes_AASA.txt") #This reads the txt file in a data frame gene_list from Habtuated vs novel, habituated vs silence or novel vs silence
+gene_list <- read.table(file = "unique_genes_condition.txt") #This reads the txt file in a data frame gene_list from Habtuated vs novel, habituated vs silence or novel vs silence conditions
 colnames(gene_list) <- "gene" #This step changes the column name/header to "gene" for the gene_list data frame
 RRBS_genes <- dplyr::semi_join(RDS_file, gene_list, by="gene") #This step matches filters the RDS for only the unique or significant genes in gene_list
 saveRDS(RRBS_genes, file="Condition_RRBS_genes.RDS") #saves the RDS file
