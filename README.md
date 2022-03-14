@@ -58,7 +58,7 @@ samtools view -b -L Condition_RRBS_genes.bed ~/$_output.bam
 ### Extracting Methylated CpG sites using BSMAPz
 python ~/methratio.py -o $_methratio.txt -d ~/GCF_003957565.2_bTaeGut1.4.pri_genomic.fna -z -x CG ~/$_interval.bam
 
-### Methylkit for differential methylation analysis, read coverage filtration, and annotation
+## Methylkit for differential methylation analysis, read coverage filtration, and annotation
 #### This is an example that shows Habituated vs Silence
 #### FA = Familiar, SI = Silence, NO = Novel (See Figshare: )
 
