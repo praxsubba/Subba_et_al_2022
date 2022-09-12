@@ -7,7 +7,7 @@ bsmap -a $input_fastq -d $ref_genome_fasta -o $output_bam -D C-CGG -D T-CGA -w 1
 
 ### Minimap2 
 
-#### This is used to map cDNA sequences from Dong et al., 2009 to the zebrafinch transcriptome GCF_003957565.2_bTaeGut1.4.pri_rna.fna
+#### This is used to map cDNA sequences from Dong et al., 2009 to the zebrafinch transcriptome GCF_003957565.2_bTaeGut1.4.pri_rna.fna (Available at: https://www.ncbi.nlm.nih.gov/assembly/GCF_003957565.2/)
 
 minimap2 -I 13G ~/GCF_003957565.2_bTaeGut1.4.pri_rna.fna ~/sb_array_seq.FASTA
 
