@@ -71,9 +71,26 @@ python ~/methratio.py -o $_methratio.txt -d ~/GCF_003957565.2_bTaeGut1.4.pri_gen
 #### This is an example that shows Habituated vs Silence
 #### FA = Familiar, SI = Silence, NO = Novel
 
+---
+title: "August 2022 AASS Methylkit"
+output:
+  html_document:
+    df_print: paged
+---
+
 ```{r}
+setwd("/Users/subbaprakrit/Library/CloudStorage/Box-Box/Prakrit Subba research/RRBS_July/February_Manusript/Methratio_files/")
+setwd("~/Box/Prakrit Subba research/RRBS_July/February_Manusript/Methratio_files/") #mac pc
+```
+
+```{r}
+#Install packages
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+BiocManager::install("methylKit")
 library("methylKit")
-file.list = list("G1FA160_AASS_methratio.txt", "G1FA211_AASS_methratio.txt", "G1FA237_AASS_methratio.txt","G2FA149_AASS_methratio.txt","G2FA209_AASS_methratio.txt","G2FA222_AASS_methratio.txt","G1SI152_AASS_methratio.txt","G1SI199_AASS_methratio.txt","G1SI246_AASS_methratio.txt","G2SI146_AASS_methratio.txt","G2SI188_AASS_methratio.txt","G2SI218_AASS_methratio.txt")
+file.list = list("G1FA160_Aug_2022_new_workflow_methratio.txt", "G1FA211_Aug_2022_new_workflow_methratio.txt", "G1FA237_Aug_2022_new_workflow_methratio.txt","G2FA149_Aug_2022_new_workflow_methratio.txt","G2FA209_Aug_2022_new_workflow_methratio.txt","G2FA222_Aug_2022_new_workflow_methratio.txt","G1SI152_Aug_2022_new_workflow_methratio.txt","G1SI199_Aug_2022_new_workflow_methratio.txt","G1SI246_Aug_2022_new_workflow_methratio.txt","G2SI146_Aug_2022_new_workflow_methratio.txt","G2SI188_Aug_2022_new_workflow_methratio.txt","G2SI218_Aug_2022_new_workflow_methratio.txt")
 myobj=methRead( file.list,pipeline=list(fraction=TRUE,chr.col=1,start.col=2,end.col=2, coverage.col=6,strand.col=3,freqC.col=5 ),
                 sample.id=list("G1FA160", "G1FA211", "G1FA237", "G2FA149", "G2FA209", "G2FA222", "G1SI152", "G1SI199", "G1SI246", "G2SI146", "G2SI188", "G2SI218"),assembly="taeGut1",treatment=c(1,1,1,1,1,1,0,0,0,0,0,0))
 ```
@@ -93,6 +110,10 @@ filtered.myobj=filterByCoverage(myobj,lo.count=10,lo.perc=NULL,
 for (i in 1:12){
   getCoverageStats(filtered.myobj[[i]],plot=TRUE,both.strands=FALSE)
 }
+
+for (i in 1:12) {
+  getMethylationStats(filtered.myobj[[i]],plot=TRUE,both.strands=FALSE)
+}
 ```
 
 ```{r}
@@ -100,7 +121,18 @@ meth=unite(filtered.myobj, destrand=FALSE)
 meth
 meth_destrand=unite(filtered.myobj, destrand=TRUE) 
 ##see that destrand=TRUE increases coverage
-meth_destrand
+meth_destrand 
+
+```
+```{r}
+#meth_unfiltered=unite(myobj, destrand=FALSE)
+#meth_unfiltered
+#meth_unfiltered_destrand=unite(myobj, destrand=TRUE) 
+##see that destrand=TRUE increases coverage
+#meth_unfiltered_destrand 
+
+#myDiff_unfiltered_d=calculateDiffMeth(meth_unfiltered_destrand)
+#getData(myDiff_unfiltered_d) %>% dplyr::arrange(qvalue)
 ```
 
 ```{r}
@@ -119,9 +151,10 @@ PCASamples(meth_destrand,adj.lim = c(.5, 1), sd.threshold = .90) #not sure about
 ```{r}
 #get a methylDiff object containing the differential methylation statistics and locations for regions or bases
 myDiff=calculateDiffMeth(meth)
+#write.csv(getData(myDiff),"summary.csv")
 getData(myDiff)
 myDiff_d=calculateDiffMeth(meth_destrand)
-getData(myDiff_d)
+getData(myDiff_d) %>% dplyr::arrange(qvalue)%>% write.csv(file="Aug_2022_new_workflow_meth_diff.csv")
 ```
 
 ```{r}
@@ -131,27 +164,10 @@ getData(myDiff10p)
 
 
 myDiff10p_destranded=getMethylDiff(myDiff_d,qvalue=.01,difference=25)
-getData(myDiff10p_destranded)
-write.csv(getData(myDiff10p_destranded),"summary_AASS_diff25.csv")
+diff_25_august <- getData(myDiff10p_destranded) %>% dplyr::arrange(qvalue)
+write.csv(diff_25_august,"Aug_2022_new_workflow_meth_diff25.csv")
 
-str(myDiff10p_destranded)
-myDiff10p_destranded_2 = as.vector(myDiff10p_destranded)
-selecting_chr <- dplyr::select(getData(myDiff10p_destranded),chr)
-d <- unique(selecting_chr[c("chr")])
-write.csv(d,file="AASS_chromosomes.csv")
 ```
-
-
-```{r}
-#percentages of hypo/hyper methylated bases over all the covered bases in a given chromosome.
-diffMethPerChr(myDiff_d,plot=TRUE,qvalue.cutoff=0.01, meth.cutoff=25)
-```
-
-Generate Bedgraph file
-```{r}
-bedgraph(myDiff10p_destranded, file.name="AASS_bedgraph.bed", col.name="meth.diff", unmeth=FALSE,log.transform=FALSE,negative=FALSE,add.on="")
-```
-
 #Annotation Plots
 ```{r}
 library(genomation)
@@ -176,6 +192,7 @@ annotateWithGeneParts(as(myDiff10p_destranded,"GRanges"),gene.obj)
 promoters=regionCounts(filtered.myobj,gene.obj$promoters)
 
 head(promoters[[1]])
+
 ```
 
 ```{r}
@@ -189,5 +206,13 @@ getTargetAnnotationStats(diffAnn,percentage=TRUE,precedence=TRUE)
 ```
 ```{r}
 plotTargetAnnotation(diffAnn,precedence=TRUE,
-    main="AASA differential methylation annotation")
+    main="Familiar vs Silence Differential Methylation Annotation")
 ```
+
+
+
+
+```{r}
+sessionInfo()
+```
+
