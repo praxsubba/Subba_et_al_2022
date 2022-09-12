@@ -154,7 +154,7 @@ myDiff=calculateDiffMeth(meth)
 #write.csv(getData(myDiff),"summary.csv")
 getData(myDiff)
 myDiff_d=calculateDiffMeth(meth_destrand)
-getData(myDiff_d) %>% dplyr::arrange(qvalue)%>% write.csv(file="Aug_2022_new_workflow_meth_diff.csv")
+getData(myDiff_d)
 ```
 
 ```{r}
