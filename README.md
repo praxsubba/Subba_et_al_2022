@@ -18,6 +18,11 @@ minimap2 -I 13G -a --splice --sr --junc-bed ~/GCF_003957565.2_bTaeGut1.4.pri_gen
 ## Rtracklayer to capture genomic internals, promoter regions and transcription start sites.
 
 ```{r}
+hab_vs_nov_sig_genes <- read.csv(file="AASA_Manuscript_plot.csv") 
+hab_vs_nov_sig_genes_final <- hab_vs_nov_sig_genes %>% dplyr::select("gene","clone_id","AASA_fold_clone","AASA_fdr_clone","log2FoldChange","fdr")  %>% filter(AASA_fdr_clone < 0.05) 
+```
+
+```{r}
 library("rtracklayer")
 library("tidyverse")
 readGFF("GCF_003957565.2_bTaeGut1.4.pri_genomic.gff")%>%head()
@@ -40,15 +45,19 @@ dat
 
 
 ```{r}
+#AASA
+#write to file
 as.data.frame(dat)%>%mutate(interval_start=ifelse(strand=="+",start-2000,start))%>%  #if positive strand, subtract 2000 from the start
   mutate(interval_start=ifelse(interval_start<1, 1,interval_start))%>%  #if start is within 2kb of start of chr, start interval at 1
   mutate(interval_stop=ifelse(strand=="-",end+2000,end))%>%
   saveRDS("PS_bTaeGut_v2p_gene_intervals_plus_10K_v2.RDS")
-RDS_file <- readRDS("PS_bTaeGut_v2p_gene_intervals_plus_10K_v2.RDS") #This reads the RDS file into a data frame test
-gene_list <- read.table(file = "unique_genes_condition.txt") #This reads the txt file in a data frame gene_list from Habtuated vs novel, habituated vs silence or novel vs silence conditions
-colnames(gene_list) <- "gene" #This step changes the column name/header to "gene" for the gene_list data frame
-RRBS_genes <- dplyr::semi_join(RDS_file, gene_list, by="gene") #This step matches filters the RDS for only the unique or significant genes in gene_list
-saveRDS(RRBS_genes, file="Condition_RRBS_genes.RDS") #saves the RDS file
+test <- readRDS("PS_bTaeGut_v2p_gene_intervals_plus_10K_v2.RDS") #This reads the RDS file into a data frame test
+unique_genes_AASA <- hab_vs_nov_sig_genes_final #This reads the txt file in a data frame unique_genes
+
+TEST_2 <- dplyr::semi_join(test, unique_genes_AASA, by="gene") #This step matches filters the RDS for only the unique or significant genes in unique_genes
+saveRDS(TEST_2, file="August_2022_sig_Habituated_vs_novel_Rtracklayer.RDS") #saves the RDS file
+write.table(TEST_2,file="August_2022_sig_Habituated_vs_novel_Rtracklayer.txt",sep = "\t",
+            row.names = FALSE) #this txt file can be used as a BED file in the following steps
 ```
 
 ### Extracting alignments from BSMAP output files using samtools view
