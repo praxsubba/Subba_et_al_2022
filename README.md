@@ -71,18 +71,6 @@ python ~/methratio.py -o $_methratio.txt -d ~/GCF_003957565.2_bTaeGut1.4.pri_gen
 #### This is an example that shows Habituated vs Silence
 #### FA = Familiar, SI = Silence, NO = Novel
 
----
-title: "August 2022 AASS Methylkit"
-output:
-  html_document:
-    df_print: paged
----
-
-```{r}
-setwd("/Users/subbaprakrit/Library/CloudStorage/Box-Box/Prakrit Subba research/RRBS_July/February_Manusript/Methratio_files/")
-setwd("~/Box/Prakrit Subba research/RRBS_July/February_Manusript/Methratio_files/") #mac pc
-```
-
 ```{r}
 #Install packages
 if (!requireNamespace("BiocManager", quietly = TRUE))
