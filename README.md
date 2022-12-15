@@ -15,6 +15,7 @@ minimap2 -I 13G ~/GCF_003957565.2_bTaeGut1.4.pri_rna.fna ~/sb_array_seq.FASTA
 
 minimap2 -I 13G -a --splice --sr --junc-bed ~/GCF_003957565.2_bTaeGut1.4.pri_genomic.bed ~/GCF_003957565.2_bTaeGut1.4.pri_genomic.fna ~/sb_array_seq.FASTA 
 
+#Output is a SAM or PAF file that needs to be converted to a BED file using sam2bed
 ## Rtracklayer to capture genomic internals, promoter regions and transcription start sites.
 
 ```{r}
