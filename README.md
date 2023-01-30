@@ -9,14 +9,26 @@ bsmap -a $input_fastq -d $ref_genome_fasta -o $output_bam -D C-CGG -D T-CGA -w 1
 
 #### This is used to map cDNA sequences from Dong et al., 2009 to the zebrafinch transcriptome GCF_003957565.2_bTaeGut1.4.pri_rna.fna (Available at: https://www.ncbi.nlm.nih.gov/assembly/GCF_003957565.2/)
 
-minimap2 -I 13G ~/GCF_003957565.2_bTaeGut1.4.pri_rna.fna ~/sb_array_seq.FASTA
+minimap2 -I 13G ~/GCF_003957565.2_bTaeGut1.4.pri_rna.fna ~/sb_array_seq.FASTA > minimap2_RNA_output_clone_transcript_Jan_2023
 
-#### This is used to map cDNA sequences from Dong et al., 2009 to the zebrafinch genome GCF_003957565.2_bTaeGut1.4.pri_genomic.fna
+#Got: clone ID and transcript Id. Then we used the following R script to get all the gene names:
 
-minimap2 -I 13G -a --splice --sr --junc-bed ~/GCF_003957565.2_bTaeGut1.4.pri_genomic.bed ~/GCF_003957565.2_bTaeGut1.4.pri_genomic.fna ~/sb_array_seq.FASTA 
+minimap_output <- read.csv(file='minimap2_RNA_output_clone_transcript_Jan_2023.csv',sep = "\t")
+head(minimap_output)
+colnames(minimap_output) <- c("Clone_ID","Transcript_ID")
 
-#Output is a SAM or PAF file that needs to be converted to a BED file using sam2bed
-## Rtracklayer to capture genomic internals, promoter regions and transcription start sites.
+
+## We extracted gene names and transcript names from the GCF_003957565.2_bTaeGut1.4.pri_rna.fna file using awk in bash
+
+transcript_gene <- read.csv(file="transcript_gene_names_zebra_finch.csv",sep = "\t")
+head(transcript_gene)
+colnames(transcript_gene) <- c('Transcript_ID','gene')
+
+clone_transcript_gene <- inner_join(transcript_gene,minimap_output,by="Transcript_ID")
+head(clone_transcript_gene)
+
+
+## Next we have to find the updated list of habituated vs novel significant genes
 
 ```{r}
 hab_vs_nov_sig_genes <- read.csv(file="AASA_Manuscript_plot.csv") 
