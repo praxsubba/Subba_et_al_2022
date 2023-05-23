@@ -18,7 +18,7 @@ head(minimap_output)
 colnames(minimap_output) <- c("Clone_ID","Transcript_ID")
 
 
-## We extracted gene names and transcript names from the GCF_003957565.2_bTaeGut1.4.pri_rna.fna file using awk in bash
+### We extracted gene names and transcript names from the GCF_003957565.2_bTaeGut1.4.pri_rna.fna file using awk in bash
 
 transcript_gene <- read.csv(file="transcript_gene_names_zebra_finch.csv",sep = "\t")
 head(transcript_gene)
