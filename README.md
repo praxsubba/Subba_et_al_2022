@@ -73,7 +73,7 @@ write.table(TEST_2,file="August_2022_sig_Habituated_vs_novel_Rtracklayer.txt",se
             row.names = FALSE) #this txt file can be used as a BED file in the following steps
 ```
 
-### Extract interval_start and interval_stop for the next steps
+#### Extract interval_start and interval_stop for the next steps
 ### Extracting alignments from BSMAP output files using samtools view
 
 samtools view -b -L August_2022_sig_Habituated_vs_novel_Rtracklayer.bed ~/$_output.bam > $_interval.bam
