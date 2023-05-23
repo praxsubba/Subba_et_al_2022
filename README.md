@@ -85,6 +85,11 @@ python ~/methratio.py -o $_methratio.txt -d ~/GCF_003957565.2_bTaeGut1.4.pri_gen
 #### This is an example that shows Habituated vs Silence
 #### FA = Familiar, SI = Silence, NO = Novel
 
+
+```{r}
+setwd("/Users/subbaprakrit/Library/CloudStorage/Box-Box/Prakrit Subba research/RRBS_July/Reanalysis_Jan_2023/Methylkit_feb_8")
+```
+
 ```{r}
 #Install packages
 if (!requireNamespace("BiocManager", quietly = TRUE))
@@ -92,7 +97,7 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 
 BiocManager::install("methylKit")
 library("methylKit")
-file.list = list("G1FA160_Aug_2022_new_workflow_methratio.txt", "G1FA211_Aug_2022_new_workflow_methratio.txt", "G1FA237_Aug_2022_new_workflow_methratio.txt","G2FA149_Aug_2022_new_workflow_methratio.txt","G2FA209_Aug_2022_new_workflow_methratio.txt","G2FA222_Aug_2022_new_workflow_methratio.txt","G1SI152_Aug_2022_new_workflow_methratio.txt","G1SI199_Aug_2022_new_workflow_methratio.txt","G1SI246_Aug_2022_new_workflow_methratio.txt","G2SI146_Aug_2022_new_workflow_methratio.txt","G2SI188_Aug_2022_new_workflow_methratio.txt","G2SI218_Aug_2022_new_workflow_methratio.txt")
+file.list = list("G1FA160_feb_2023_methratio.txt", "G1FA211_feb_2023_methratio.txt", "G1FA237_feb_2023_methratio.txt","G2FA149_feb_2023_methratio.txt","G2FA209_feb_2023_methratio.txt","G2FA222_feb_2023_methratio.txt","G1SI152_feb_2023_methratio.txt","G1SI199_feb_2023_methratio.txt","G1SI246_feb_2023_methratio.txt","G2SI146_feb_2023_methratio.txt","G2SI188_feb_2023_methratio.txt","G2SI218_feb_2023_methratio.txt")
 myobj=methRead( file.list,pipeline=list(fraction=TRUE,chr.col=1,start.col=2,end.col=2, coverage.col=6,strand.col=3,freqC.col=5 ),
                 sample.id=list("G1FA160", "G1FA211", "G1FA237", "G2FA149", "G2FA209", "G2FA222", "G1SI152", "G1SI199", "G1SI246", "G2SI146", "G2SI188", "G2SI218"),assembly="taeGut1",treatment=c(1,1,1,1,1,1,0,0,0,0,0,0))
 ```
@@ -147,7 +152,10 @@ clusterSamples(meth_destrand, dist="correlation", method="ward", plot=TRUE,sd.th
 #plot Principal Components
 
 PCASamples(meth,adj.lim = c(.4, 1), sd.threshold = .90) #not sure about how to set this value?
-PCASamples(meth_destrand,adj.lim = c(.5, 1), sd.threshold = .90) #not sure about how to set this value?
+PCASamples(meth_destrand,adj.lim = c(0,1), sd.threshold = 0.5) #not sure about how to set this value?
+
+
+
 
 ```
 ```{r}
@@ -156,7 +164,7 @@ myDiff=calculateDiffMeth(meth)
 #write.csv(getData(myDiff),"summary.csv")
 getData(myDiff)
 myDiff_d=calculateDiffMeth(meth_destrand)
-getData(myDiff_d)
+getData(myDiff_d) %>% dplyr::arrange(qvalue)%>% write.csv(file="Feb_8_2023_new_workflow_meth_diff.csv")
 ```
 
 ```{r}
@@ -167,7 +175,7 @@ getData(myDiff10p)
 
 myDiff10p_destranded=getMethylDiff(myDiff_d,qvalue=.01,difference=25)
 diff_25_august <- getData(myDiff10p_destranded) %>% dplyr::arrange(qvalue)
-write.csv(diff_25_august,"Aug_2022_new_workflow_meth_diff25.csv")
+write.csv(diff_25_august,"Feb_8_2023_new_workflow_meth_diff25_unannotated.csv")
 
 ```
 #Annotation Plots
@@ -179,7 +187,7 @@ library(genomation)
 # read the gene BED file
 bed=readTableFast("1_test_genePred.bed.txt",header=FALSE,skip="auto")
 head(bed)
-gene.obj=readTranscriptFeatures("1_test_genePred.bed.txt",remove.unusual=FALSE)
+gene.obj=readTranscriptFeatures("1_test_genePred.bed.txt",up.flank=2000,down.flank=0,remove.unusual=FALSE) #I think up.flank adds promoter boundaries to 2000 bp
 ```
 
 ```{r}
@@ -187,7 +195,8 @@ gene.obj=readTranscriptFeatures("1_test_genePred.bed.txt",remove.unusual=FALSE)
 # annotate differentially methylated CpGs with 
 # promoter/exon/intron using annotation data
 #
-annotateWithGeneParts(as(myDiff10p_destranded,"GRanges"),gene.obj)
+annotateWithGeneParts(as(myDiff10p_destranded,"GRanges"),gene.obj,intersect.chr=T)
+annotateWithFeatures(as(myDiff10p_destranded,"GRanges"),gene.obj,intersect.chr = T)
 ```
 
 ```{r}
@@ -199,7 +208,10 @@ head(promoters[[1]])
 
 ```{r}
 diffAnn=annotateWithGeneParts(as(myDiff10p_destranded,"GRanges"),gene.obj)
-
+diffAnn_features=annotateWithFeatures(as(myDiff10p_destranded,"GRanges"),gene.obj,intersect.chr = T)
+plotTargetAnnotation(diffAnn_features,precedence=T,
+    main="Familiar vs Silence Differential Methylation Annotation")
+plotTargetAnnotation(diffAnn,precedence=T)
 # target.row is the row number in myDiff10p_destranded
 head(getAssociationWithTSS(diffAnn))
 ```
@@ -211,10 +223,45 @@ plotTargetAnnotation(diffAnn,precedence=TRUE,
     main="Familiar vs Silence Differential Methylation Annotation")
 ```
 
+``
 
+```{r}
+# CALCULATING FOR ALL CpGs
+# annotate differentially methylated CpGs with 
+# promoter/exon/intron using annotation data
+#
+annotateWithGeneParts(as(myDiff_d,"GRanges"),gene.obj,intersect.chr = T)
+annotateWithFeatures(as(myDiff_d,"GRanges"),gene.obj,intersect.chr = T)
+```
+
+```{r}
+promoters_ALL=regionCounts(filtered.myobj,gene.obj$promoters)
+
+head(promoters_ALL[[1]])
+
+```
+
+```{r}
+diffAnn_ALL=annotateWithGeneParts(as(myDiff_d,"GRanges"),gene.obj,intersect.chr = T)
+plotTargetAnnotation(diffAnn_ALL,precedence=T)
+
+diffAnn_features_ALL=annotateWithFeatures(as(myDiff_d,"GRanges"),gene.obj,intersect.chr = T)
+plotTargetAnnotation(diffAnn_features_ALL,precedence=T,
+    main="Familiar vs Silence Differential Methylation Annotation in all CpGs")
+# target.row is the row number in myDiff_d
+head(getAssociationWithTSS(diffAnn_ALL))
+```
+```{r}
+getTargetAnnotationStats(diffAnn_ALL,percentage=TRUE,precedence=TRUE)
+```
+```{r}
+plotTargetAnnotation(diffAnn_ALL,precedence=TRUE,
+    main="Familiar vs Silence Differential Methylation Annotation in all CpGs")
+```
 
 
 ```{r}
 sessionInfo()
 ```
+
 
